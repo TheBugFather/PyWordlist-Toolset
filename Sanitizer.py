@@ -55,13 +55,14 @@ def main():
         mode = 'w'
         # Overwrite the old word list #
         with open(filename, mode) as report_file:
-            # Write result to report file #
-            [report_file.write(f'{parse}\n') for parse in parse_set]
+            # Write result wordlist #
+            for parse in parse_set:
+                report_file.write(f'{parse}\n')
 
     # If file error occurs #
-    except (IOError, OSError) as err:
-        PrintErr(f'Error occurred during wordlist sanitation: {err}')
-        ErrorQuery(filename, mode, err)
+    except (IOError, OSError) as file_err:
+        PrintErr(f'Error occurred during wordlist sanitation: {file_err}')
+        ErrorQuery(filename, mode, file_err)
         sys.exit(2)
 
     sys.exit(0)

@@ -68,9 +68,12 @@ def main():
                 else:
                     break
 
+        filename = 'wordlist.txt'
         mode = 'ab'
-        with open('wordlist.txt', mode) as out_file:
-            [out_file.write(f'{string}\n') for string in string_parse]
+        # Write result wordlist #
+        with open(filename, mode) as out_file:
+            for string in string_set:
+                out_file.write(f'{string}\n')
 
     # If error occurs during file operation #
     except (IOError, OSError) as err:

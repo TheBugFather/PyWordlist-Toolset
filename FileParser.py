@@ -60,9 +60,10 @@ def main():
                     # Write results to report file #
                     [string_set.add(string) for string in string_parse]
 
+        filename = 'wordlist.txt'
         mode = 'a'
         # Open the wordlist in append mode #
-        with open('wordlist.txt', mode) as report_file:
+        with open(filename, mode) as report_file:
             for string in string_set:
                 # Remove extra whitespace #
                 parse = string.strip()
@@ -72,7 +73,7 @@ def main():
     # If file error occurs #
     except (IOError, OSError) as err:
         PrintErr(f'Error occurred during file operation: {err}')
-        ErrorQuery('wordlist.txt', mode, err)
+        ErrorQuery(filename, mode, err)
         sys.exit(2)
 
     sys.exit(0)
