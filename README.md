@@ -36,7 +36,7 @@ This allows the scripts to be executed in various combinations while still resul
 
 Execution syntax:<br>
 
-`binParser.py &lt;binary filename&gt;`<br>
-`fileParser.py &lt;text filenname&gt;`<br>
-`sanitizer.py &lt;wordlist name&gt;`<br>
-`scrapeParser.py &lt;url list&gt;`
+`binParser.py <binary filename>`<br>
+`fileParser.py <text filename>`<br>
+`sanitizer.py <wordlist name>`<br>
+`scrapeParser.py <url list>`
