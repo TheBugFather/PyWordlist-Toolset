@@ -44,7 +44,7 @@ def main():
         sys.exit(1)
 
     string_set = set()
-    re_string = re.compile(b'[a-zA-Z\d !@$&(-_"\'.,]{4,15}(?: |$)')
+    re_string = re.compile(b'[a-zA-Z0-9!@$&(-_"\'.,]{4,15}(?: |$)')
 
     mode = 'rb'
     try:
@@ -76,9 +76,9 @@ def main():
                 out_file.write(f'{string}\n')
 
     # If error occurs during file operation #
-    except (IOError, OSError) as err:
-        PrintErr(f'Error occurred during file operation: {err}')
-        ErrorQuery(filename, mode, err)
+    except (IOError, OSError) as file_err:
+        # Look up specific error with errno module #
+        ErrorQuery(filename, mode, file_err)
         sys.exit(2)
 
     sys.exit(0)

@@ -104,7 +104,7 @@ def main():
 
     # If error occurs during file operation #
     except (IOError, OSError) as file_err:
-        PrintErr(f'Error occurred during file operation: {file_err}')
+        # Look up specific error with errno module #
         ErrorQuery(filename, mode, file_err)
         sys.exit(3)
 

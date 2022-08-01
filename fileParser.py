@@ -53,10 +53,10 @@ def main():
 
                 # If regex matches #
                 if string_parse:
-                    # Filter out phrases with minimal value #
+                    # Tuple for specifying which words to filter out #
                     parse_tuple = ('True', 'False')
+                    # Filter out phrases with minimal value #
                     string_parse = [string.strip() for string in string_parse if string not in parse_tuple]
-
                     # Write results to report file #
                     [string_set.add(string) for string in string_parse]
 
@@ -64,6 +64,7 @@ def main():
         mode = 'a'
         # Open the wordlist in append mode #
         with open(filename, mode) as report_file:
+            # Iterate through each string in unique set #
             for string in string_set:
                 # Remove extra whitespace #
                 parse = string.strip()
@@ -71,9 +72,9 @@ def main():
                 report_file.write(f'{parse}\n')
 
     # If error occurs during file operation #
-    except (IOError, OSError) as err:
-        PrintErr(f'Error occurred during file operation: {err}')
-        ErrorQuery(filename, mode, err)
+    except (IOError, OSError) as file_err:
+        # Look up specific error with errno module #
+        ErrorQuery(filename, mode, file_err)
         sys.exit(2)
 
     sys.exit(0)

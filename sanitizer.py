@@ -9,8 +9,9 @@ from Modules.Utils import ErrorQuery, PrintErr
 """
 ########################################################################################################################
 Name:       main
-Purpose:    Iterates through input wordlist, stripping any extra whitespace outside of each item and overwriting the \
-            results to a fresh sanitized wordlist.
+Purpose:    Iterates through input wordlist, stripping any extra whitespace outside of each item, removing any \
+            punctuation or quotation marks from beginning and ending of string, and overwriting the results to a fresh \
+            sanitized wordlist.
 Parameters: Nothing
 Returns:    Nothing
 ########################################################################################################################
@@ -41,14 +42,28 @@ def main():
 
     # Filter set with only unique strings #
     parse_set = set()
+    # Create filter tuple with punctuation and quotes #
+    punc = (',', '.', ':', ';', '\'', '"')
 
     mode = 'r'
     try:
         # Open current wordlist in read mode #
         with open(filename, mode) as file:
+            # Iterate through file line by line #
             for line in file:
                 # Strip out unnecessary whitespace #
                 parsed_text = line.strip()
+
+                # If the string starts with punctuation or quotes #
+                if parsed_text.startswith(punc):
+                    # Index slice character from string start #
+                    parsed_text = parsed_text[1:]
+
+                # If the string ends with punctuation or quotes #
+                if parsed_text.endswith(punc):
+                    # Index slice character from string end #
+                    parsed_text = parsed_text[:-1]
+
                 # Add parsed text to set #
                 parse_set.add(parsed_text)
 
@@ -61,7 +76,7 @@ def main():
 
     # If error occurs during file operation #
     except (IOError, OSError) as file_err:
-        PrintErr(f'Error occurred during wordlist sanitation: {file_err}')
+        # Look up specific error with errno module #
         ErrorQuery(filename, mode, file_err)
         sys.exit(2)
 

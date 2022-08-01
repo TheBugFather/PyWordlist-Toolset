@@ -7,6 +7,8 @@ venv/*
 # Pycache #
 Modules/__pycache__
 
-
+# Test files #
+gobusterOutput.txt
 test.bin
 test.txt
+wordlist.txt
