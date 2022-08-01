@@ -6,3 +6,7 @@ venv/*
 
 # Pycache #
 Modules/__pycache__
+
+
+test.bin
+test.txt

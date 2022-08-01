@@ -12,9 +12,9 @@ from Modules.Utils import ErrorQuery, PrintErr
 
 
 # Target IP or domain name #
-TARGET = '192.168.122.162'
+TARGET = '<Add IP or Domain>'
 # Specify whether http or https #
-PROTO = 'http'
+PROTO = '<Add http or https>'
 
 
 """
@@ -53,7 +53,7 @@ def main():
     re_parse = re.compile(r'^/[a-zA-Z\d.-]{1,255}')
     re_string = re.compile(r'[a-zA-Z\d!@$&(\-_\"\'.,]{4,15}(?: |$)')
 
-    print(f'Scraping text from url list to create custom wordlist\n{"*" * 54}\n')
+    print(f'\nScraping text from url list to create custom wordlist\n{"*" * 54}\n')
 
     mode = 'r'
     try:

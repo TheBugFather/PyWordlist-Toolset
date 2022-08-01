@@ -44,7 +44,7 @@ def main():
         sys.exit(1)
 
     string_set = set()
-    re_string = re.compile(r'[a-zA-Z\d!@$&(\-_\"\'.,]{4,15}(?: |$)')
+    re_string = re.compile(b'[a-zA-Z\d !@$&(-_"\'.,]{4,15}(?: |$)')
 
     mode = 'rb'
     try:
@@ -62,14 +62,14 @@ def main():
                     if string_parse:
                         # Append to match list via list comprehension #
                         for string in string_parse:
-                            string_set.add(string)
+                            string_set.add(string.decode())
 
                 # If no data chunk #
                 else:
                     break
 
         filename = 'wordlist.txt'
-        mode = 'ab'
+        mode = 'a'
         # Write result wordlist #
         with open(filename, mode) as out_file:
             for string in string_set:
