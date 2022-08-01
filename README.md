@@ -33,9 +33,10 @@ This allows the scripts to be executed in various combinations while still resul
 - For sanitizer, move the wordlist to be sanitized in program directory
 - For scrape parser, set the IP/Domain and Protocol in program header<br>
 <br>
+
 Execution syntax:<br>
-<br>
-``binParser.py &lt;binary filename&gt;``<br>
-``fileParser.py &lt;text filenname&gt;``<br>
-``sanitizer.py &lt;wordlist name&gt;``<br>
-``scrapeParser.py &lt;url list&gt;``
+
+`binParser.py &lt;binary filename&gt;`<br>
+`fileParser.py &lt;text filenname&gt;`<br>
+`sanitizer.py &lt;wordlist name&gt;`<br>
+`scrapeParser.py &lt;url list&gt;`
