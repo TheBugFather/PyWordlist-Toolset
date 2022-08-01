@@ -28,11 +28,14 @@ This allows the scripts to be executed in various combinations while still resul
 
 ## How to use
 - Open a shell (cmd or terminal)
-- Change directory to PyWordlist-Toolset<br>
+- Change directory to PyWordlist-Toolset
+- For bin and file parser, move bin or file to be parsed in program directory
+- For sanitizer, move the wordlist to be sanitized in program directory
+- For scrape parser, set the IP/Domain and Protocol in program header<br>
 <br>
 Execution syntax:<br>
 <br>
-- `binParser.py <binary filename>`<br>
-- `fileParser.py <text filenname>`<br>
-- `sanitizer.py <wordlist name>`<br>
-- `scrapeParser.py <url list>`
+`binParser.py <binary filename>`<br>
+`fileParser.py <text filenname>`<br>
+`sanitizer.py <wordlist name>`<br>
+`scrapeParser.py <url list>`
