@@ -10,7 +10,7 @@ PyWordlist-Toolset features numerous tools to create and format custom wordlists
 
 > binParser.py  -  Generates wordlist from arg binary file contents<br>
 > fileParser.py  -  Generates wordlist from arg text file contents<br>
-> sanitizer.py  -  Strips leading and trailing whitespace from arg wordlist<br>
+> sanitizer.py  -  Strips leading/trailing whitespace, and punctuation/quotation from string ends on arg wordlist<br>
 > scrapeParser.py  -  Generate wordlist from scraped web data from arg url list
 
 Aside from the sanitizer, all scripts generate the wordlist in append mode.<br>
@@ -32,7 +32,7 @@ This allows the scripts to be executed in various combinations while still resul
 <br>
 Execution syntax:<br>
 <br>
-- `binParser.py <binary filename>`
-- `fileParser.py <text filenname>`
-- `sanitizer.py <wordlist name>`
+- `binParser.py <binary filename>`<br>
+- `fileParser.py <text filenname>`<br>
+- `sanitizer.py <wordlist name>`<br>
 - `scrapeParser.py <url list>`
