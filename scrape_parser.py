@@ -1,14 +1,13 @@
-# Built-in modules #
+# pylint: disable=W0106
+""" Built-in modules """
 import os
 import re
 import sys
-
 # External modules #
 import requests
 from bs4 import BeautifulSoup
-
 # Custom modules #
-from Modules.Utils import ErrorQuery, PrintErr
+from Modules.utils import error_query, print_err
 
 
 # Target IP or domain name #
@@ -17,15 +16,52 @@ TARGET = '<Add IP or Domain>'
 PROTO = '<Add http or https>'
 
 
-"""
-########################################################################################################################
-Name:       main
-Purpose:    Iterates through input url file, scraping text data, and writing results as wordlist.
-Parameters: Nothing
-Returns:    Nothing
-########################################################################################################################
-"""
+def get_webpage(web_page: str):
+    """
+    Uses beautiful soup to retrieve web page text data.
+
+    :param web_page:  The web page to be retrieved.
+    :return:  The scraped web page data.
+    """
+    # Use a get request to fetch webpage contents #
+    get_page = requests.get(web_page)
+    # Initialize Beautiful Soup web parser #
+    soup = BeautifulSoup(get_page.text, 'html.parser')
+    # Get the page text data #
+    return soup.get_text()
+
+
+def arg_check(file_path: str):
+    """
+    Checks if user passed in filename arg, raises error if no arg was passed in. If the file name \
+    arg passed in does not exist an error is raised to inform the user of their improper input.
+
+    :param file_path:  Path to the input file name.
+    :return:  File name on success, exit code 1 on failue.
+    """
+    # If a file name arg was passed in #
+    if len(sys.argv) > 1:
+        filename = f'{file_path}{sys.argv[1]}'
+
+        # If the arg file name does not exist #
+        if not os.path.isfile(filename):
+            print_err('Passed in arg file name does not exist')
+            sys.exit(1)
+    # If user failed to provide input file name #
+    else:
+        print_err('No name of file to be parsed provided .. try'
+                  ' again with \"ScrapeParser.py <url list>\"')
+        sys.exit(1)
+
+    return filename
+
+
 def main():
+    """
+    Iterates through input url file, scraping text data, and writing results as wordlist.
+
+    :return:  Nothing
+    """
     # Get the working directory #
     cwd = os.getcwd()
 
@@ -36,18 +72,8 @@ def main():
     else:
         path = f'{cwd}/'
 
-    # If a file name arg was passed in #
-    if len(sys.argv) > 1:
-        filename = f'{path}{sys.argv[1]}'
-
-        # If the arg file name does not exist #
-        if not os.path.isfile(filename):
-            PrintErr('Passed in arg file name does not exist')
-            sys.exit(1)
-    # If user failed to provide input file name #
-    else:
-        PrintErr('No name of file to be parsed provided .. try again with \"ScrapeParser.py <url list>\"')
-        sys.exit(1)
+    # Check to see if user passed in file name #
+    filename = arg_check(path)
 
     scrape_set = set()
     re_parse = re.compile(r'^/[a-zA-Z\d.-]{1,255}')
@@ -57,7 +83,7 @@ def main():
 
     mode = 'r'
     try:
-        with open(filename, mode) as in_file:
+        with open(filename, mode, encoding='utf-8') as in_file:
             # Iterate through url list line by line #
             for line in in_file:
                 print(line)
@@ -76,16 +102,12 @@ def main():
                     request = f'https://{TARGET}{ext_path.group(0)}'
                 # If improper protocol was specified #
                 else:
-                    PrintErr('Improper protocol specified, put either http '
+                    print_err('Improper protocol specified, put either http '
                              'or https in PROTO variable in program header')
                     sys.exit(2)
 
-                # Use a get request to fetch webpage contents #
-                get_page = requests.get(request)
-                # Initialize Beautiful Soup web parser #
-                soup = BeautifulSoup(get_page.text, 'html.parser')
                 # Get the page text data #
-                page_text = soup.get_text()
+                page_text = get_webpage(request)
 
                 # Match all strings in the page text #
                 strings = re.findall(re_string, page_text)
@@ -98,14 +120,14 @@ def main():
         filename = 'wordlist.txt'
         mode = 'a'
         # Write the result set to output wordlist #
-        with open(filename, mode) as out_file:
+        with open(filename, mode, encoding='utf-8') as out_file:
             for string in scrape_set:
                 out_file.write(f'{string}\n')
 
     # If error occurs during file operation #
     except (IOError, OSError) as file_err:
         # Look up specific error with errno module #
-        ErrorQuery(filename, mode, file_err)
+        error_query(filename, mode, file_err)
         sys.exit(3)
 
     sys.exit(0)

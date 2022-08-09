@@ -1,21 +1,18 @@
-# Built-in modules #
+# pylint: disable=W0106
+""" Built-in modules """
 import os
 import re
 import sys
-
 # Custom modules #
-from Modules.Utils import ErrorQuery, PrintErr
+from Modules.utils import error_query, print_err
 
 
-"""
-########################################################################################################################
-Name:       main
-Purpose:    Iterates through input file, matching words, and creating wordlist from results.
-Parameters: Nothing
-Returns:    Nothing
-########################################################################################################################
-"""
 def main():
+    """
+    Iterates through input file, matching words, and creating wordlist from results.
+
+    :return:  Nothing
+    """
     # Get the working directory #
     cwd = os.getcwd()
 
@@ -32,11 +29,12 @@ def main():
 
         # If the arg file name does not exist #
         if not os.path.isfile(filename):
-            PrintErr('Passed in arg file name does not exist')
+            print_err('Passed in arg file name does not exist')
             sys.exit(1)
     # If user failed to provide input file name #
     else:
-        PrintErr('No name of file to be parsed provided .. try again with \"WordlistFileParser.py <file name>\"')
+        print_err('No name of file to be parsed provided .. try '
+                  'again with \"WordlistFileParser.py <file name>\"')
         sys.exit(1)
 
     # Only record unique strings #
@@ -46,7 +44,7 @@ def main():
 
     mode = 'r'
     try:
-        with open(filename, mode) as file:
+        with open(filename, mode, encoding='utf-8') as file:
             for line in file:
                 # Check line of text for matches, populate into list #
                 string_parse = re.findall(re_string, line)
@@ -55,15 +53,16 @@ def main():
                 if string_parse:
                     # Tuple for specifying which words to filter out #
                     parse_tuple = ('True', 'False')
-                    # Filter out phrases with minimal value #
-                    string_parse = [string.strip() for string in string_parse if string not in parse_tuple]
+                    # Filter out phrases with minimal value and strip extra whitespace #
+                    string_parse = [string.strip() for string in string_parse
+                                    if string not in parse_tuple]
                     # Write results to report file #
                     [string_set.add(string) for string in string_parse]
 
         filename = 'wordlist.txt'
         mode = 'a'
         # Open the wordlist in append mode #
-        with open(filename, mode) as report_file:
+        with open(filename, mode, encoding='utf-8') as report_file:
             # Iterate through each string in unique set #
             for string in string_set:
                 # Remove extra whitespace #
@@ -74,7 +73,7 @@ def main():
     # If error occurs during file operation #
     except (IOError, OSError) as file_err:
         # Look up specific error with errno module #
-        ErrorQuery(filename, mode, file_err)
+        error_query(filename, mode, file_err)
         sys.exit(2)
 
     sys.exit(0)

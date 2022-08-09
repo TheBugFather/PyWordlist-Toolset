@@ -2,8 +2,12 @@
 ![alt text](https://github.com/ngimb64/PyWordlist-Toolset/blob/main/ScrapeParser.gif?raw=true)
 ![alt text](https://github.com/ngimb64/PyWordlist-Toolset/blob/main/BinParser.png?raw=true)
 
+&#9745;&#65039; Bandit verified<br>
+&#9745;&#65039; Synk verified<br>
+&#9745;&#65039; Pylint verified 9.97/10
+
 ## Prereqs
-> This program runs on Windows and Linux, written in Python 3.9
+This program runs on Windows and Linux, written in Python 3.9
 
 ## Purpose
 PyWordlist-Toolset features numerous tools to create and format custom wordlists: 
@@ -19,11 +23,10 @@ This allows the scripts to be executed in various combinations while still resul
 ## Installation
 - Run the setup.py script to build a virtual environment and install all external packages in the created venv.
 
-> Example:<br>
-> python3 setup.py "venv name"
+> Example: `python3 setup.py venv`
 
 - Once virtual env is built traverse to the (Scripts-Windows or bin-Linux) directory in the environment folder just created.
-- For Windows in the Scripts directory, for execute the "activate" script to activate the virtual environment.
+- For Windows in the Scripts directory, for execute the `./activate` script to activate the virtual environment.
 - For Linux in the bin directory, run the command `source activate` to activate the virtual environment.
 
 ## How to use

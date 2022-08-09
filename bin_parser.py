@@ -1,25 +1,21 @@
-# Built-in modules #
+""" Built-in modules """
 import os
 import re
 import sys
-
 # Custom modules #
-from Modules.Utils import ErrorQuery, PrintErr
+from Modules.utils import error_query, print_err
 
 
 # Pseudo-constants #
 CHUNK_SIZE = 4096
 
 
-"""
-########################################################################################################################
-Name:       main
-Purpose:    Iterates through input binary, matching words, and creating wordlist from results.
-Parameters: Nothing
-Returns:    Nothing
-########################################################################################################################
-"""
 def main():
+    """
+    Iterates through input binary, matching words, and creating wordlist from results.
+
+    :return:  Nothing
+    """
     # Get the working directory #
     cwd = os.getcwd()
 
@@ -36,11 +32,12 @@ def main():
 
         # If the arg file name does not exist #
         if not os.path.isfile(filename):
-            PrintErr('Passed in arg file name does not exist')
+            print_err('Passed in arg file name does not exist')
             sys.exit(1)
     # If user failed to provide input file name #
     else:
-        PrintErr('No name of file to be parsed provided .. try again with \"WordlistBinParser.py <bin name>\"')
+        print_err('No name of file to be parsed provided .. try '
+                  'again with \"WordlistBinParser.py <bin name>\"')
         sys.exit(1)
 
     string_set = set()
@@ -71,14 +68,14 @@ def main():
         filename = 'wordlist.txt'
         mode = 'a'
         # Write result wordlist #
-        with open(filename, mode) as out_file:
+        with open(filename, mode, encoding='utf-8') as out_file:
             for string in string_set:
                 out_file.write(f'{string}\n')
 
     # If error occurs during file operation #
     except (IOError, OSError) as file_err:
         # Look up specific error with errno module #
-        ErrorQuery(filename, mode, file_err)
+        error_query(filename, mode, file_err)
         sys.exit(2)
 
     sys.exit(0)
