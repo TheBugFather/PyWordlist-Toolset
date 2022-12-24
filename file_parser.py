@@ -1,8 +1,8 @@
 # pylint: disable=W0106
 """ Built-in modules """
-import os
 import re
 import sys
+from pathlib import Path
 # Custom modules #
 from Modules.utils import error_query, print_err
 
@@ -13,28 +13,22 @@ def main():
 
     :return:  Nothing
     """
+    ret = 0
     # Get the working directory #
-    cwd = os.getcwd()
-
-    # If the OS is Windows #
-    if os.name == 'nt':
-        path = f'{cwd}\\'
-    # If the OS is Linux #
-    else:
-        path = f'{cwd}/'
+    path = Path('.')
 
     # If a file name arg was passed in #
     if len(sys.argv) > 1:
-        filename = f'{path}{sys.argv[1]}'
+        filename = path / sys.argv[1]
 
         # If the arg file name does not exist #
-        if not os.path.isfile(filename):
+        if not filename.exists():
             print_err('Passed in arg file name does not exist')
             sys.exit(1)
     # If user failed to provide input file name #
     else:
         print_err('No name of file to be parsed provided .. try '
-                  'again with \"WordlistFileParser.py <file name>\"')
+                  'again with \"file_parser.py <file_name>\"')
         sys.exit(1)
 
     # Only record unique strings #
@@ -44,7 +38,7 @@ def main():
 
     mode = 'r'
     try:
-        with open(filename, mode, encoding='utf-8') as file:
+        with filename.open(mode, encoding='utf-8') as file:
             for line in file:
                 # Check line of text for matches, populate into list #
                 string_parse = re.findall(re_string, line)
@@ -59,10 +53,10 @@ def main():
                     # Write results to report file #
                     [string_set.add(string) for string in string_parse]
 
-        filename = 'wordlist.txt'
+        filename = path / 'wordlist.txt'
         mode = 'a'
         # Open the wordlist in append mode #
-        with open(filename, mode, encoding='utf-8') as report_file:
+        with filename.open(mode, encoding='utf-8') as report_file:
             # Iterate through each string in unique set #
             for string in string_set:
                 # Remove extra whitespace #
@@ -73,10 +67,10 @@ def main():
     # If error occurs during file operation #
     except (IOError, OSError) as file_err:
         # Look up specific error with errno module #
-        error_query(filename, mode, file_err)
-        sys.exit(2)
+        error_query(str(filename.resolve()), mode, file_err)
+        ret = 2
 
-    sys.exit(0)
+    sys.exit(ret)
 
 
 if __name__ == '__main__':

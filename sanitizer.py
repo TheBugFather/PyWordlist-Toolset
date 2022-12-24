@@ -1,6 +1,6 @@
 """ Built-in modules """
-import os
 import sys
+from pathlib import Path
 # Custom modules #
 from Modules.utils import error_query, print_err
 
@@ -13,28 +13,22 @@ def main():
 
     :return:  Nothing
     """
+    ret = 0
     # Get the working directory #
-    cwd = os.getcwd()
-
-    # If the OS is Windows #
-    if os.name == 'nt':
-        path = f'{cwd}\\'
-    # If the OS is Linux #
-    else:
-        path = f'{cwd}/'
+    path = Path('.')
 
     # If a file name arg was passed in #
     if len(sys.argv) > 1:
-        filename = f'{path}{sys.argv[1]}'
+        filename = path / sys.argv[1]
 
         # If the arg file name does not exist #
-        if not os.path.isfile(filename):
+        if not filename.exists():
             print_err('Passed in arg file name does not exist')
             sys.exit(1)
     # If user failed to provide input wordlist name #
     else:
         print_err('No name of wordlist file provided .. try again '
-                  'with \"WordlistSanitizer <wordlist name>\"')
+                  'with \"sanitizer.py <wordlist_name>\"')
         sys.exit(1)
 
     # Filter set with only unique strings #
@@ -45,7 +39,7 @@ def main():
     mode = 'r'
     try:
         # Open current wordlist in read mode #
-        with open(filename, mode, encoding='utf-8') as file:
+        with filename.open(mode, encoding='utf-8') as file:
             # Iterate through file line by line #
             for line in file:
                 # Strip out unnecessary whitespace #
@@ -66,7 +60,7 @@ def main():
 
         mode = 'w'
         # Overwrite the old word list #
-        with open(filename, mode, encoding='utf-8') as report_file:
+        with filename.open(mode, encoding='utf-8') as report_file:
             # Write result wordlist #
             for parse in parse_set:
                 report_file.write(f'{parse}\n')
@@ -74,10 +68,10 @@ def main():
     # If error occurs during file operation #
     except (IOError, OSError) as file_err:
         # Look up specific error with errno module #
-        error_query(filename, mode, file_err)
-        sys.exit(2)
+        error_query(str(filename.resolve()), mode, file_err)
+        ret = 2
 
-    sys.exit(0)
+    sys.exit(ret)
 
 
 if __name__ == '__main__':
