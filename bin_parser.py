@@ -6,7 +6,7 @@ from pathlib import Path
 from Modules.utils import error_query, print_err
 
 
-# Pseudo-constants #
+# Global variables #
 CHUNK_SIZE = 4096
 
 
@@ -18,7 +18,7 @@ def main():
     """
     ret = 0
     # Get the working directory #
-    path = Path('.')
+    path = Path.cwd()
 
     # If a file name arg was passed in #
     if len(sys.argv) > 1:
@@ -35,31 +35,29 @@ def main():
         sys.exit(1)
 
     string_set = set()
+    # Compile word matching regex #
     re_string = re.compile(b'[a-zA-Z0-9!@$&(-_"\'.,]{4,15}(?: |$)')
 
     mode = 'rb'
     try:
+        # Open binary source file and ready byte data #
         with filename.open(mode) as bin_file:
             while True:
                 # Ready a chunk from the
                 chunk = bin_file.read(CHUNK_SIZE)
-
-                # If chunk of data was read #
-                if chunk:
-                    # Find all regex matches formatted as a list #
-                    string_parse = re.findall(re_string, chunk)
-
-                    # If regex match was successful #
-                    if string_parse:
-                        # Append to match list via list comprehension #
-                        for string in string_parse:
-                            string_set.add(string.decode())
-
-                # If no data chunk #
-                else:
+                # If no chunk of data because EOF #
+                if not chunk:
                     break
 
-        filename = path / 'wordlist.txt'
+                # Find all regex matches formatted as a list #
+                string_parse = re.findall(re_string, chunk)
+                # If regex match was successful #
+                if string_parse:
+                    # Append unique words to match set #
+                    for string in string_parse:
+                        string_set.add(string.decode().strip())
+
+        filename = path / 'PyWordlist.txt'
         mode = 'a'
         # Write result wordlist #
         with filename.open(mode, encoding='utf-8') as out_file:
@@ -67,9 +65,9 @@ def main():
                 out_file.write(f'{string}\n')
 
     # If error occurs during file operation #
-    except (IOError, OSError) as file_err:
+    except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(filename.resolve()), mode, file_err)
+        error_query(str(filename), mode, file_err)
         ret = 2
 
     sys.exit(ret)

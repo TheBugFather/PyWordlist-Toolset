@@ -15,7 +15,7 @@ def main():
     """
     ret = 0
     # Get the working directory #
-    path = Path('.')
+    path = Path.cwd()
 
     # If a file name arg was passed in #
     if len(sys.argv) > 1:
@@ -55,6 +55,8 @@ def main():
                     # Index slice character from string end #
                     parsed_text = parsed_text[:-1]
 
+                # Strip out unnecessary whitespace #
+                parsed_text.strip()
                 # Add parsed text to set #
                 parse_set.add(parsed_text)
 
@@ -66,9 +68,9 @@ def main():
                 report_file.write(f'{parse}\n')
 
     # If error occurs during file operation #
-    except (IOError, OSError) as file_err:
+    except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(filename.resolve()), mode, file_err)
+        error_query(str(filename), mode, file_err)
         ret = 2
 
     sys.exit(ret)

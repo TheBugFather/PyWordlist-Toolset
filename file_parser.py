@@ -15,7 +15,7 @@ def main():
     """
     ret = 0
     # Get the working directory #
-    path = Path('.')
+    path = Path.cwd()
 
     # If a file name arg was passed in #
     if len(sys.argv) > 1:
@@ -33,16 +33,16 @@ def main():
 
     # Only record unique strings #
     string_set = set()
-    # Compile string matching regex #
+    # Compile word matching regex #
     re_string = re.compile(r'[a-zA-Z\d!@$&(\-_\"\'.,]{4,15}(?: |$)')
 
     mode = 'r'
     try:
+        # Open source text file and read string data #
         with filename.open(mode, encoding='utf-8') as file:
             for line in file:
                 # Check line of text for matches, populate into list #
                 string_parse = re.findall(re_string, line)
-
                 # If regex matches #
                 if string_parse:
                     # Tuple for specifying which words to filter out #
@@ -59,15 +59,13 @@ def main():
         with filename.open(mode, encoding='utf-8') as report_file:
             # Iterate through each string in unique set #
             for string in string_set:
-                # Remove extra whitespace #
-                parse = string.strip()
                 # Write result to report file #
-                report_file.write(f'{parse}\n')
+                report_file.write(f'{string}\n')
 
     # If error occurs during file operation #
-    except (IOError, OSError) as file_err:
+    except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(filename.resolve()), mode, file_err)
+        error_query(str(filename), mode, file_err)
         ret = 2
 
     sys.exit(ret)

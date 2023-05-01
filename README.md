@@ -1,16 +1,14 @@
-# PyWordlist-Toolset
+<div align="center" style="font-family: monospace">
+<h1>PyWordlist-Toolset</h1>
+&#9745;&#65039; Bandit verified &nbsp;|&nbsp; &#9745;&#65039; Synk verified &nbsp;|&nbsp; &#9745;&#65039; Pylint verified 9.97/10
+<br><br>
+
 ![alt text](https://github.com/ngimb64/PyWordlist-Toolset/blob/main/ScrapeParser.gif?raw=true)
 ![alt text](https://github.com/ngimb64/PyWordlist-Toolset/blob/main/BinParser.png?raw=true)
-
-&#9745;&#65039; Bandit verified<br>
-&#9745;&#65039; Synk verified<br>
-&#9745;&#65039; Pylint verified 9.97/10
-
-## Prereqs
-This program runs on Windows 10 and Debian-based Linux, written in Python 3.9 and updated to version 3.10.6
+</div>
 
 ## Purpose
-PyWordlist-Toolset features numerous tools to create and format custom wordlists: 
+PyWordlist-Toolset features numerous tools to create and format custom wordlists:
 
 > binParser.py  -  Generates wordlist from arg binary file contents<br>
 > fileParser.py  -  Generates wordlist from arg text file contents<br>
@@ -19,6 +17,15 @@ PyWordlist-Toolset features numerous tools to create and format custom wordlists
 
 Aside from the sanitizer, all scripts generate the wordlist in append mode.<br>
 This allows the scripts to be executed in various combinations while still resulting in a single wordlist.
+
+### License
+The program is licensed under [GNU Public License v3.0](LICENSE.md)
+
+### Contributions or Issues
+[CONTRIBUTING](CONTRIBUTING.md)
+
+## Prereqs
+This program runs on Windows 10 and Debian-based Linux, written in Python 3.9 and updated to version 3.10.6
 
 ## Installation
 - Run the setup.py script to build a virtual environment and install all external packages in the created venv.

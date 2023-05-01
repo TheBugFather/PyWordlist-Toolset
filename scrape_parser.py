@@ -64,7 +64,7 @@ def main():
     """
     ret = 0
     # Get the working directory #
-    path = Path('.')
+    path = Path.cwd()
     # Check to see if user passed in file name #
     filename = arg_check(path)
 
@@ -118,9 +118,9 @@ def main():
                 out_file.write(f'{string}\n')
 
     # If error occurs during file operation #
-    except (IOError, OSError) as file_err:
+    except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(filename.resolve()), mode, file_err)
+        error_query(str(filename), mode, file_err)
         ret = 3
 
     sys.exit(ret)
