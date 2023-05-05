@@ -9,7 +9,11 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 # Custom modules #
-from Modules.utils import error_query, print_err
+from Modules.utils import error_query, print_err, wordlist_writer
+
+
+# Specify fluff words to filter from wordlist #
+PARSE_TUPLE = ('True', 'False', 'true', 'false')
 
 
 def get_webpage(config_obj: object, parsed_request: str) -> str | bool:
@@ -30,8 +34,7 @@ def get_webpage(config_obj: object, parsed_request: str) -> str | bool:
         # If the initial HTTP request fails #
         if get_page.status_code != 200 and not parsed_request.startswith('https'):
             # Reformat the request as HTTPS and try again #
-            parsed_request = f'https://{config_obj.host}:{config_obj.port}' \
-                             f'{parsed_request.split("//")[1]}'
+            parsed_request = f'https://{parsed_request.split("//")[1]}'
             continue
 
         # If the second HTTPS request fails #
@@ -46,66 +49,56 @@ def get_webpage(config_obj: object, parsed_request: str) -> str | bool:
     return soup.get_text()
 
 
-def scrape_handler(conf_obj: object):
+def scrape_handler(config_obj: object):
     """
     Handles reading urls from source file, performing regex to determine source data format, and
     passing necessary resources into the get_webpage() call to retrieve the web page data. Once the
     web page data has been gathered the words in the text data are matched with regex and written
     to the output wordlist.
 
-    :param conf_obj:  The program configuration instance.
+    :param config_obj:  The program configuration instance.
     :return:  Nothing
     """
-    mode = 'r'
     try:
         # Open the source file passed in as arg for parsing #
-        with conf_obj.in_file.open(mode, encoding='utf-8') as in_file:
+        with config_obj.in_file.open('r', encoding='utf-8') as in_file:
             # Iterate through url list line by line #
             for line in in_file:
                 print(line)
 
                 # If the wordlist scrape mode was selected #
-                if conf_obj.mode == 'scrape':
-                    ext_path = re.search(conf_obj.re_gobuster_parse, line)
+                if config_obj.mode == 'scrape':
+                    ext_path = re.search(config_obj.re_gobuster_parse, line)
                 # If Gobuster scrape mode was selected #
                 else:
                     # Search the line for the web path #
-                    ext_path = re.search(conf_obj.re_text_word, line)
+                    ext_path = re.search(config_obj.re_text_word, line)
 
                 # If all web scraping regex patterns fail, skip current line #
                 if not ext_path:
                     continue
 
                 # Get the web page text data #
-                page_text = get_webpage(conf_obj, ext_path.group(0))
+                page_text = get_webpage(config_obj, ext_path.group(0))
                 # If the retrieval of web page text data fails #
                 if not page_text:
                     continue
 
                 # Match all strings in the page text #
-                strings = re.findall(conf_obj.re_text_word, page_text)
-
+                strings = re.findall(config_obj.re_text_word, page_text)
                 # If the page has word strings #
                 if strings:
                     # Add string data to string set to filter duplicates #
-                    [conf_obj.parse_set.add(string) for string in strings]
+                    [config_obj.parse_set.add(string) for string in strings
+                     if string not in config_obj.parse_tuple]
 
     # If error occurs during file operation #
     except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(conf_obj.in_file), mode, file_err)
+        error_query(str(config_obj.in_file), 'r', file_err)
 
-    try:
-        mode = 'a'
-        # Write the result set to output wordlist #
-        with conf_obj.out_file.open(mode, encoding='utf-8') as out_file:
-            for string in conf_obj.parse_set:
-                out_file.write(f'{string}\n')
-
-    # If error occurs during file operation #
-    except OSError as file_err:
-        # Look up specific error with errno module #
-        error_query(str(conf_obj.out_file), mode, file_err)
+    # Write the parsed web data as wordlist #
+    wordlist_writer(config_obj, config_obj.out_file, 'a')
 
 
 def sanitize_handler(config_obj: object):
@@ -119,10 +112,9 @@ def sanitize_handler(config_obj: object):
     # Create filter tuple with punctuation and quotes #
     punc = (',', '.', ':', ';', '\'', '"')
 
-    mode = 'r'
     try:
         # Open current wordlist in read mode #
-        with config_obj.in_file.open(mode, encoding='utf-8') as file:
+        with config_obj.in_file.open('r', encoding='utf-8') as file:
             # Iterate through file line by line #
             for line in file:
                 # Strip out unnecessary whitespace #
@@ -146,20 +138,10 @@ def sanitize_handler(config_obj: object):
     # If error occurs during file operation #
     except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(config_obj.in_file), mode, file_err)
+        error_query(str(config_obj.in_file), 'r', file_err)
 
-    try:
-        mode = 'w'
-        # Overwrite the old word list #
-        with config_obj.out_file.open(mode, encoding='utf-8') as report_file:
-            # Write result wordlist #
-            for parse in config_obj.parse_set:
-                report_file.write(f'{parse}\n')
-
-    # If error occurs during file operation #
-    except OSError as file_err:
-        # Look up specific error with errno module #
-        error_query(str(config_obj.out_file), mode, file_err)
+    # Overwrite the passed in wordlist with sanitized result #
+    wordlist_writer(config_obj, config_obj.in_file, 'w')
 
 
 def text_handler(config_obj: object):
@@ -170,41 +152,27 @@ def text_handler(config_obj: object):
     :param config_obj: The program configuration instance.
     :return:  Nothing
     """
-    mode = 'r'
     try:
         # Open source text file and read string data #
-        with config_obj.in_file.open(mode, encoding='utf-8') as text_file:
+        with config_obj.in_file.open('r', encoding='utf-8') as text_file:
             for line in text_file:
                 # Check line of text for matches, populate into list #
                 string_parse = re.findall(config_obj.re_text_word, line)
                 # If regex matches #
                 if string_parse:
-                    # Tuple for specifying which words to filter out #
-                    parse_tuple = ('True', 'False')
                     # Filter out phrases with minimal value and strip extra whitespace #
                     string_parse = [string.strip() for string in string_parse
-                                    if string not in parse_tuple]
+                                    if string not in config_obj.parse_tuple]
                     # Write results to report file #
                     [config_obj.parse_set.add(string) for string in string_parse]
 
     # If error occurs during file operation #
     except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(config_obj.in_file), mode, file_err)
+        error_query(str(config_obj.in_file), 'r', file_err)
 
-    try:
-        mode = 'a'
-        # Open the wordlist in append mode #
-        with config_obj.out_file.open(mode, encoding='utf-8') as report_file:
-            # Iterate through each string in unique set #
-            for string in config_obj.parse_set:
-                # Write result to report file #
-                report_file.write(f'{string}\n')
-
-    # If error occurs during file operation #
-    except OSError as file_err:
-        # Look up specific error with errno module #
-        error_query(str(config_obj.out_file), mode, file_err)
+    # Write the parsed text data as wordlist #
+    wordlist_writer(config_obj, config_obj.out_file, 'a')
 
 
 def bin_handler(conf_obj: object):
@@ -215,10 +183,9 @@ def bin_handler(conf_obj: object):
     :param conf_obj:  The program configuration instance.
     :return:  Nothing
     """
-    mode = 'rb'
     try:
         # Open binary source file and ready byte data #
-        with conf_obj.in_file.open(mode) as bin_file:
+        with conf_obj.in_file.open('rb') as bin_file:
             while True:
                 # Ready a chunk from the source file #
                 chunk = bin_file.read(4096)
@@ -231,24 +198,16 @@ def bin_handler(conf_obj: object):
                 # If regex match was successful #
                 if string_parse:
                     # Append unique words to match set #
-                    [conf_obj.parse_set.add(string.decode().strip()) for string in string_parse]
+                    [conf_obj.parse_set.add(string.decode().strip()) for string in string_parse
+                     if string.decode() not in conf_obj.parse_tuple]
 
     # If error occurs during file operation #
     except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(conf_obj.in_file), mode, file_err)
+        error_query(str(conf_obj.in_file), 'rb', file_err)
 
-    try:
-        mode = 'a'
-        # Write result wordlist #
-        with conf_obj.out_file.open(mode, encoding='utf-8') as out_file:
-            for string in conf_obj.parse_set:
-                out_file.write(f'{string}\n')
-
-    # If error occurs during file operation #
-    except OSError as file_err:
-        # Look up specific error with errno module #
-        error_query(str(conf_obj.out_file), mode, file_err)
+    # Write the parsed and decoded binary word data as wordlist #
+    wordlist_writer(conf_obj, conf_obj.out_file, 'a')
 
 
 class ProgramConfig:
@@ -264,6 +223,7 @@ class ProgramConfig:
         self.host = None
         self.port = None
         self.parse_set = set()
+        self.parse_tuple = PARSE_TUPLE
 
         # Program compiled regex patterns #
         self.re_ipv4 = re.compile(r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
@@ -378,7 +338,7 @@ def main():
     if args.port:
         config_obj.parse_port(args.port)
 
-    # Make sure proper args correspond with the mode type #
+    # Make sure host and port are specified for web scraping related modes #
     if (args.mode in ('scrape', 'gobuster')) and (not args.host or not args.port):
         # Print error, log, and exit with error code #
         print_err('Specified mode that requires host and port but at least one is missing')

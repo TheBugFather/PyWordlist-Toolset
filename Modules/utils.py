@@ -1,6 +1,7 @@
 """ Built-in modules """
 import errno
 import sys
+from pathlib import Path
 
 
 def error_query(err_path: str, err_mode: str, err_obj):
@@ -39,3 +40,24 @@ def print_err(msg: str):
     """
     #  Print error via standard error #
     print(f'\n* [ERROR] {msg} *\n', file=sys.stderr)
+
+
+def wordlist_writer(conf_obj: object, output_file: Path, file_mode: str):
+    """
+    Writes the resulting wordlist file from words stored in parsing set.
+
+    :param conf_obj:  The program configuration instance.
+    :param output_file:  The output wordlist file to write to.
+    :param file_mode:  The file mode to open the output wordlist in.
+    :return:  Nothing
+    """
+    try:
+        # Write the result set to output wordlist #
+        with output_file.open(file_mode, encoding='utf-8') as output_file:
+            for string in conf_obj.parse_set:
+                output_file.write(f'{string}\n')
+
+    # If error occurs during file operation #
+    except OSError as file_err:
+        # Look up specific error with errno module #
+        error_query(str(output_file), file_mode, file_err)
