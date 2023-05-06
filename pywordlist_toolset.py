@@ -8,6 +8,7 @@ from pathlib import Path
 # External modules #
 import requests
 from bs4 import BeautifulSoup
+from pypdf import PdfReader
 # Custom modules #
 from Modules.utils import error_query, print_err, wordlist_writer
 
@@ -39,6 +40,7 @@ def get_webpage(config_obj: object, parsed_request: str) -> str | bool:
 
         # If the second HTTPS request fails #
         if get_page.status_code != 200 and parsed_request.startswith('https'):
+            logging.error('Both requests failed for %s', parsed_request)
             return False
 
         break
@@ -59,12 +61,14 @@ def scrape_handler(config_obj: object):
     :param config_obj:  The program configuration instance.
     :return:  Nothing
     """
+    print(f'[+] Scraping web data at {config_obj.host}:{config_obj.port} using '
+          f'{config_obj.in_file.name}')
     try:
         # Open the source file passed in as arg for parsing #
         with config_obj.in_file.open('r', encoding='utf-8') as in_file:
             # Iterate through url list line by line #
             for line in in_file:
-                print(line)
+                print(line, end='')
 
                 # If the wordlist scrape mode was selected #
                 if config_obj.mode == 'scrape':
@@ -100,6 +104,8 @@ def scrape_handler(config_obj: object):
     # Write the parsed web data as wordlist #
     wordlist_writer(config_obj, config_obj.out_file, 'a')
 
+    print(f'[!] Scraped web data has been parsed and written to {config_obj.out_file.name}')
+
 
 def sanitize_handler(config_obj: object):
     """
@@ -112,6 +118,7 @@ def sanitize_handler(config_obj: object):
     # Create filter tuple with punctuation and quotes #
     punc = (',', '.', ':', ';', '\'', '"')
 
+    print(f'[+] Sanitizing wordlist {config_obj.in_file.name}')
     try:
         # Open current wordlist in read mode #
         with config_obj.in_file.open('r', encoding='utf-8') as file:
@@ -143,6 +150,28 @@ def sanitize_handler(config_obj: object):
     # Overwrite the passed in wordlist with sanitized result #
     wordlist_writer(config_obj, config_obj.in_file, 'w')
 
+    print('[!] Sanitizing complete and original wordlist '
+          f'{config_obj.in_file.name} has been overwritten')
+
+
+def pdf_handler(config_obj: object):
+    """
+    Reads input pdf saving text page by page to buffer and saving output to wordlist.
+
+    :param config_obj:  The program configuration instance.
+    :return:  Nothing
+    """
+    text_buffer = ''
+    # Initialize pdf reader on input pdf file #
+    pdf_reader = PdfReader(str(config_obj.in_file))
+
+    # Iterate through pages in pdf and add text to buffer #
+    for page in pdf_reader.pages:
+        text_buffer += page.extract_text()
+
+    # Write all the read pdf data in result wordlist #
+    wordlist_writer(config_obj, config_obj.out_file, 'a')
+
 
 def text_handler(config_obj: object):
     """
@@ -152,6 +181,7 @@ def text_handler(config_obj: object):
     :param config_obj: The program configuration instance.
     :return:  Nothing
     """
+    print(f'[+] Parsing text file {config_obj.in_file.name}')
     try:
         # Open source text file and read string data #
         with config_obj.in_file.open('r', encoding='utf-8') as text_file:
@@ -174,18 +204,21 @@ def text_handler(config_obj: object):
     # Write the parsed text data as wordlist #
     wordlist_writer(config_obj, config_obj.out_file, 'a')
 
+    print(f'[!] Text parsing complete and output written to {config_obj.out_file}')
 
-def bin_handler(conf_obj: object):
+
+def bin_handler(config_obj: object):
     """
     Reads binary file chunk by chunk, parses out words, and formats parsed words into the output
     wordlist file.
 
-    :param conf_obj:  The program configuration instance.
+    :param config_obj:  The program configuration instance.
     :return:  Nothing
     """
+    print(f'[+] Parsing binary file {config_obj.in_file.name}')
     try:
         # Open binary source file and ready byte data #
-        with conf_obj.in_file.open('rb') as bin_file:
+        with config_obj.in_file.open('rb') as bin_file:
             while True:
                 # Ready a chunk from the source file #
                 chunk = bin_file.read(4096)
@@ -194,20 +227,22 @@ def bin_handler(conf_obj: object):
                     break
 
                 # Find all regex matches formatted as a list #
-                string_parse = re.findall(conf_obj.re_bin_word, chunk)
+                string_parse = re.findall(config_obj.re_bin_word, chunk)
                 # If regex match was successful #
                 if string_parse:
                     # Append unique words to match set #
-                    [conf_obj.parse_set.add(string.decode().strip()) for string in string_parse
-                     if string.decode() not in conf_obj.parse_tuple]
+                    [config_obj.parse_set.add(string.decode().strip()) for string in string_parse
+                     if string.decode() not in config_obj.parse_tuple]
 
     # If error occurs during file operation #
     except OSError as file_err:
         # Look up specific error with errno module #
-        error_query(str(conf_obj.in_file), 'rb', file_err)
+        error_query(str(config_obj.in_file), 'rb', file_err)
 
     # Write the parsed and decoded binary word data as wordlist #
-    wordlist_writer(conf_obj, conf_obj.out_file, 'a')
+    wordlist_writer(config_obj, config_obj.out_file, 'a')
+
+    print(f'[!] Binary parsing complete and output written to {config_obj.out_file}')
 
 
 class ProgramConfig:
@@ -304,6 +339,8 @@ def main():
 
     :return:  Nothing
     """
+    line_len = 100
+    print('=' * line_len)
     print(r'''
      _____    __          __           _ _ _     _     _______          _          _   
     |  __ \   \ \        / /          | | (_)   | |   |__   __|        | |        | |  
@@ -314,6 +351,8 @@ def main():
             __/ |                                                                      
            |___/                                                                       
     ''')
+    print('=' * line_len)
+
     # Initialize the program configuration class #
     config_obj = ProgramConfig()
 
@@ -321,8 +360,9 @@ def main():
     arg_parser = argparse.ArgumentParser(description='The Python wordlist generation toolset')
     arg_parser.add_argument('file_path', help='Path to the file to be parsed into in a wordlist or '
                                               'the wordlist file for scraping operations')
-    arg_parser.add_argument('mode', choices=['bin', 'text', 'sanitize', 'scrape', 'gobuster'],
-                            help='Sets execution mode, supported modes: (bin, text, sanitize,'
+    arg_parser.add_argument('mode', choices=['bin', 'text', 'pdf', 'sanitize', 'scrape',
+                                             'gobuster'],
+                            help='Sets execution mode, supported modes: (bin, text, pdf, sanitize,'
                                  ' scrape, gobuster)')
     arg_parser.add_argument('--host', help='Remote host to scrape web data into wordlist, supports'
                                            ' IPv4, IPv6, and domain format')
@@ -353,6 +393,9 @@ def main():
     # If the text file mode was selected #
     elif config_obj.mode == 'text':
         text_handler(config_obj)
+    # If the pdf file mode was selected #
+    elif config_obj.mode == 'pdf':
+        pdf_handler(config_obj)
     # If the sanitizer mode was selected #
     elif config_obj.mode == 'sanitize':
         sanitize_handler(config_obj)
@@ -362,6 +405,8 @@ def main():
     # If the gobuster scrape mode was selected #
     else:
         scrape_handler(config_obj)
+
+    print('=' * line_len)
 
 
 if __name__ == '__main__':
