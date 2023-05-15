@@ -30,18 +30,22 @@ def get_webpage(config_obj: object, parsed_request: str) -> str | bool:
         parsed_request = f'http://{config_obj.host}:{config_obj.port}{parsed_request}'
 
     while True:
-        # Use a get request to fetch webpage contents #
-        get_page = requests.get(parsed_request)
-        # If the initial HTTP request fails #
-        if get_page.status_code != 200 and not parsed_request.startswith('https'):
-            # Reformat the request as HTTPS and try again #
-            parsed_request = f'https://{parsed_request.split("//")[1]}'
-            continue
+        try:
+            # Use a get request to fetch webpage contents #
+            get_page = requests.get(parsed_request)
+        
+        # If error occurs retrieveing web page data #
+        except OSError:
+            # If the initial HTTP request fails #
+            if get_page.status_code != 200 and not parsed_request.startswith('https'):
+                # Reformat the request as HTTPS and try again #
+                parsed_request = f'https://{parsed_request.split("//")[1]}'
+                continue
 
-        # If the second HTTPS request fails #
-        if get_page.status_code != 200 and parsed_request.startswith('https'):
-            logging.error('Both requests failed for %s', parsed_request)
-            return False
+            # If the second HTTPS request fails #
+            if get_page.status_code != 200 and parsed_request.startswith('https'):
+                logging.error('Both requests failed for %s', parsed_request)
+                return False
 
         break
 
@@ -62,21 +66,23 @@ def scrape_handler(config_obj: object):
     :return:  Nothing
     """
     print(f'[+] Scraping web data at {config_obj.host}:{config_obj.port} using '
-          f'{config_obj.in_file.name}')
+          f'{config_obj.in_file.name}\n')
     try:
         # Open the source file passed in as arg for parsing #
         with config_obj.in_file.open('r', encoding='utf-8') as in_file:
             # Iterate through url list line by line #
             for line in in_file:
                 print(line, end='')
-
-                # If the wordlist scrape mode was selected #
+                # If line is empty, continue to next line #
+                if not line:
+                    continue
+                
+                # If the wordlist scrape mode or gobuster mode was selected #
                 if config_obj.mode == 'scrape':
-                    ext_path = re.search(config_obj.re_gobuster_parse, line)
-                # If Gobuster scrape mode was selected #
+                    ext_path = re.search(config_obj.re_url_parse, line)
+                # If gobuster mode was selected #
                 else:
-                    # Search the line for the web path #
-                    ext_path = re.search(config_obj.re_text_word, line)
+                    ext_path = re.search(config_obj.re_url_parse, line[4:])
 
                 # If all web scraping regex patterns fail, skip current line #
                 if not ext_path:
@@ -104,7 +110,7 @@ def scrape_handler(config_obj: object):
     # Write the parsed web data as wordlist #
     wordlist_writer(config_obj, config_obj.out_file, 'a')
 
-    print(f'[!] Scraped web data has been parsed and written to {config_obj.out_file.name}')
+    print(f'\n[!] Scraped web data has been parsed and written to {config_obj.out_file.name}')
 
 
 def sanitize_handler(config_obj: object):
@@ -116,7 +122,7 @@ def sanitize_handler(config_obj: object):
     :return:  Nothing
     """
     # Create filter tuple with punctuation and quotes #
-    punc = (',', '.', ':', ';', '\'', '"')
+    punc = (',', '.', ':', ';', '\'', '"', '!')
 
     print(f'[+] Sanitizing wordlist {config_obj.in_file.name}')
     try:
@@ -273,9 +279,9 @@ class ProgramConfig:
         self.re_ipv6 = re.compile(r'^([0-9a-f]{0,4}:){2,7}(:|[0-9a-f]{1,4})$')
         self.re_domain = re.compile(r'^(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+'
                                     r'[a-zA-Z]{2,6}$')
-        self.re_bin_word = re.compile(b'[a-zA-Z0-9!@$&(-_\"\'.,]{4,15}(?: |$)')
-        self.re_text_word = re.compile(r'[a-zA-Z\d!@$&(\-_\"\'.,]{4,15}(?: |$)')
-        self.re_gobuster_parse = re.compile(r'^/[a-zA-Z\d.-]{1,255}')
+        self.re_bin_word = re.compile(b'[a-zA-Z0-9!@$&(-_\"\'.,]{4,15}(?: |$)', re.M)
+        self.re_text_word = re.compile(r'[a-zA-Z\d!@$&(\-_\"\'.,]{4,15}(?: |$)', re.M)
+        self.re_url_parse = re.compile(r'^(?:/[a-zA-Z\d.-]{1,255})+')
 
     def parse_in_file(self, file_path: str):
         """
@@ -331,7 +337,7 @@ class ProgramConfig:
         :return:  Nothing
         """
         # If port is out of expected range #
-        if port > 80 or port < 65535:
+        if port <  80 or port > 65535:
             # Print error, log, and exit with error code #
             print_err(f'Passed in port {port} is out of expected port range of 80-65535')
             logging.error('Passed in port %s is out of expected port range of 80-65535', port)
@@ -347,16 +353,16 @@ def main():
 
     :return:  Nothing
     """
-    line_len = 100
+    line_len = 110
     print('=' * line_len, end='')
     print(r'''
-     _____    __          __           _ _ _     _     _______          _          _   
-    |  __ \   \ \        / /          | | (_)   | |   |__   __|        | |        | |  
-    | |__) |   \ \  /\  / /__  _ __ __| | |_ ___| |_     | | ___   ___ | |___  ___| |_ 
+     _____    __          __           _ _ _     _     _______          _          _
+    |  __ \   \ \        / /          | | (_)   | |   |__   __|        | |        | |
+    | |__) |   \ \  /\  / /__  _ __ __| | |_ ___| |_     | | ___   ___ | |___  ___| |_
     |  ___/ | | \ \/  \/ / _ \| '__/ _` | | / __| __|    | |/ _ \ / _ \| / __|/ _ \ __|
-    | |   | |_| |\  /\  / (_) | | | (_| | | \__ \ |_     | | (_) | (_) | \__ \  __/ |_ 
+    | |   | |_| |\  /\  / (_) | | | (_| | | \__ \ |_     | | (_) | (_) | \__ \  __/ |_
     |_|    \__, | \/  \/ \___/|_|  \__,_|_|_|___/\__|    |_|\___/ \___/|_|___/\___|\__|
-            __/ |                                                                      
+            __/ |
            |___/''')
     print('=' * line_len)
 
@@ -430,3 +436,4 @@ if __name__ == '__main__':
         ret = 1
 
     sys.exit(ret)
+
