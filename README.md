@@ -8,12 +8,14 @@
 </div>
 
 ## Purpose
-PyWordlist-Toolset features numerous tools to create and format custom wordlists:
+PyWordlist-Toolset features numerous modes for wordlist generation.
 
-> binParser.py  -  Generates wordlist from arg binary file contents<br>
-> fileParser.py  -  Generates wordlist from arg text file contents<br>
-> sanitizer.py  -  Strips leading/trailing whitespace, and punctuation/quotation from string ends on arg wordlist<br>
-> scrapeParser.py  -  Generate wordlist from scraped web data from arg url list
+> **bin** - Parses words from binary file <br>
+> **text** - Parses words from text file <br>
+> **pdf** - Parses words from PDF file <br>
+> **sanitize** - Sanitizes existing wordlist, removing punctuation, quotation marks, and excess whitespace <br>
+> **scrape** - Takes website end points as input wordlists, scrapes webpage data to format wordlist <br>
+> **gobuster** - Takes gobuster output as input, scrapes the endpoints to format wordlist
 
 Aside from the sanitizer, all scripts generate the wordlist in append mode.<br>
 This allows the scripts to be executed in various combinations while still resulting in a single wordlist.
@@ -41,16 +43,17 @@ This program runs on Windows 10 and Debian-based Linux, written in Python 3.9 an
 - To exit from the virtual environment when finished, execute `deactivate`.
 
 ## How to use
-- Open a shell (cmd or terminal)
-- Change directory to PyWordlist-Toolset
-- For bin and file parser, move bin or file to be parsed in program directory
-- For sanitizer, move the wordlist to be sanitized in program directory
-- For scrape parser, set the IP/Domain and Protocol in program header<br>
-<br>
 
-Execution syntax:<br>
+---
+**Note**: python(3) means either python or python3 depending on Windows or Linux
+> bin - `python(3) <input_text_file> bin`
 
-`binParser.py <binary filename>`<br>
-`fileParser.py <text filename>`<br>
-`sanitizer.py <wordlist name>`<br>
-`scrapeParser.py <url list>`
+> text - `python(3) <input_bin_file> text`
+
+> pdf - `python(3) <input_pdf_file> pdf`
+
+> sanitize - `python(3) <input_wordlist> sanitize`
+
+> scrape - `python(3) <input_wordlist> scrape`
+
+> gobuster - `python(3) <input_gobuster_output> gobuster`

@@ -162,6 +162,8 @@ def pdf_handler(config_obj: object):
     :return:  Nothing
     """
     text_buffer = ''
+    print(f'[+] Parsing PDF file {config_obj.in_file.name}')
+
     # Initialize pdf reader on input pdf file #
     pdf_reader = PdfReader(str(config_obj.in_file))
 
@@ -169,8 +171,14 @@ def pdf_handler(config_obj: object):
     for page in pdf_reader.pages:
         text_buffer += page.extract_text()
 
+    # Iterate through words in text buffer and add to parse set to filter duplicates #
+    for word in text_buffer.split(' '):
+        config_obj.parse_set.add(word)
+
     # Write all the read pdf data in result wordlist #
     wordlist_writer(config_obj, config_obj.out_file, 'a')
+
+    print(f'[!] PDF parsing complete and output written to {config_obj.out_file.name}')
 
 
 def text_handler(config_obj: object):
@@ -204,7 +212,7 @@ def text_handler(config_obj: object):
     # Write the parsed text data as wordlist #
     wordlist_writer(config_obj, config_obj.out_file, 'a')
 
-    print(f'[!] Text parsing complete and output written to {config_obj.out_file}')
+    print(f'[!] Text parsing complete and output written to {config_obj.out_file.name}')
 
 
 def bin_handler(config_obj: object):
@@ -242,7 +250,7 @@ def bin_handler(config_obj: object):
     # Write the parsed and decoded binary word data as wordlist #
     wordlist_writer(config_obj, config_obj.out_file, 'a')
 
-    print(f'[!] Binary parsing complete and output written to {config_obj.out_file}')
+    print(f'[!] Binary parsing complete and output written to {config_obj.out_file.name}')
 
 
 class ProgramConfig:
@@ -340,7 +348,7 @@ def main():
     :return:  Nothing
     """
     line_len = 100
-    print('=' * line_len)
+    print('=' * line_len, end='')
     print(r'''
      _____    __          __           _ _ _     _     _______          _          _   
     |  __ \   \ \        / /          | | (_)   | |   |__   __|        | |        | |  
@@ -349,8 +357,7 @@ def main():
     | |   | |_| |\  /\  / (_) | | | (_| | | \__ \ |_     | | (_) | (_) | \__ \  __/ |_ 
     |_|    \__, | \/  \/ \___/|_|  \__,_|_|_|___/\__|    |_|\___/ \___/|_|___/\___|\__|
             __/ |                                                                      
-           |___/                                                                       
-    ''')
+           |___/''')
     print('=' * line_len)
 
     # Initialize the program configuration class #
@@ -359,7 +366,7 @@ def main():
     # Parse command line arguments #
     arg_parser = argparse.ArgumentParser(description='The Python wordlist generation toolset')
     arg_parser.add_argument('file_path', help='Path to the file to be parsed into in a wordlist or '
-                                              'the wordlist file for scraping operations')
+                                              'input file for scraping operations')
     arg_parser.add_argument('mode', choices=['bin', 'text', 'pdf', 'sanitize', 'scrape',
                                              'gobuster'],
                             help='Sets execution mode, supported modes: (bin, text, pdf, sanitize,'
@@ -399,10 +406,7 @@ def main():
     # If the sanitizer mode was selected #
     elif config_obj.mode == 'sanitize':
         sanitize_handler(config_obj)
-    # If the scrape mode was selected #
-    elif config_obj.mode == 'scrape':
-        scrape_handler(config_obj)
-    # If the gobuster scrape mode was selected #
+    # If mode utilizing web scraping was selected #
     else:
         scrape_handler(config_obj)
 
