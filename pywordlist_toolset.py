@@ -25,6 +25,7 @@ def get_webpage(config_obj: object, parsed_request: str) -> str | bool:
     :param parsed_request:  The request data parsed from specified source file.
     :return:  Returns scrape web data as text on success, False boolean on failure.
     """
+    get_page = None
     # If the request is missing the protocol #
     if not parsed_request.startswith('http'):
         parsed_request = f'http://{config_obj.host}:{config_obj.port}{parsed_request}'

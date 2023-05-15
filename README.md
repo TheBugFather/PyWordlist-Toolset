@@ -17,6 +17,8 @@ PyWordlist-Toolset features numerous modes for wordlist generation.
 > **scrape** - Takes website end points as input wordlists, scrapes webpage data to format wordlist <br>
 > **gobuster** - Takes gobuster output as input, scrapes the endpoints to format wordlist
 
+**Note**: scraping modes support IPv4 & IPv6 addressing or domain names.
+
 Aside from the sanitizer, all scripts generate the wordlist in append mode.<br>
 This allows the scripts to be executed in various combinations while still resulting in a single wordlist.
 
@@ -46,14 +48,14 @@ This program runs on Windows 10 and Debian-based Linux, written in Python 3.9 an
 
 ---
 **Note**: python(3) means either python or python3 depending on Windows or Linux
-> bin - `python(3) <input_text_file> bin`
+> bin - `python(3) <input_bin_file> bin`
 
-> text - `python(3) <input_bin_file> text`
+> text - `python(3) <input_text_file> text`
 
 > pdf - `python(3) <input_pdf_file> pdf`
 
 > sanitize - `python(3) <input_wordlist> sanitize`
 
-> scrape - `python(3) <input_wordlist> scrape`
+> scrape - `python(3) --host <ip_address(4|6) | domain_name> --port <port_number> <input_wordlist> scrape`
 
-> gobuster - `python(3) <input_gobuster_output> gobuster`
+> gobuster - `python(3) --host <ip_address(4|6) | domain_name> --port <port_number> <input_gobuster_output> gobuster`
