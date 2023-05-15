@@ -1,6 +1,8 @@
 """ Built-in modules """
 import errno
 import sys
+import logging
+from pathlib import Path
 
 
 def error_query(err_path: str, err_mode: str, err_obj):
@@ -15,19 +17,25 @@ def error_query(err_path: str, err_mode: str, err_obj):
     # If file does not exist #
     if err_obj.errno == errno.ENOENT:
         print_err(f'{err_path} does not exist')
+        logging.error('%s does not exist', err_path)
 
     # If the file does not have read/write access #
     elif err_obj.errno == errno.EPERM:
         print_err(f'{err_path} does not have permissions for {err_mode}'
                   ' file mode, if file exists confirm it is closed')
+        logging.error('%s does not have permissions for %s file mode, if file '
+                      'exists confirm it is closed', err_path, err_mode)
 
     # File IO error occurred #
     elif err_obj.errno == errno.EIO:
         print_err(f'IO error occurred during {err_mode} mode on {err_path}')
+        logging.error('IO error occurred during %s mode on %s', err_mode, err_path)
 
-    # If other unexpected file operation occurs #
+    # If other unexpected file operation error occurs #
     else:
-        print_err(f'Unexpected file operation occurred accessing {err_path}: {err_obj.errno}')
+        print_err(f'Unexpected file operation error occurred accessing {err_path}: {err_obj.errno}')
+        logging.error('Unexpected file operation error occurred accessing %s: %s',
+                      err_path, err_obj.errno)
 
 
 def print_err(msg: str):
@@ -39,3 +47,24 @@ def print_err(msg: str):
     """
     #  Print error via standard error #
     print(f'\n* [ERROR] {msg} *\n', file=sys.stderr)
+
+
+def wordlist_writer(conf_obj: object, output_file: Path, file_mode: str):
+    """
+    Writes the resulting wordlist file from words stored in parsing set.
+
+    :param conf_obj:  The program configuration instance.
+    :param output_file:  The output wordlist file to write to.
+    :param file_mode:  The file mode to open the output wordlist in.
+    :return:  Nothing
+    """
+    try:
+        # Write the result set to output wordlist #
+        with output_file.open(file_mode, encoding='utf-8') as output_file:
+            for string in conf_obj.parse_set:
+                output_file.write(f'{string}\n')
+
+    # If error occurs during file operation #
+    except OSError as file_err:
+        # Look up specific error with errno module #
+        error_query(str(output_file), file_mode, file_err)
